@@ -1,56 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Online Counter</title>
+  <meta charset="UTF-8" />
+  <title>Online Counter</title>
 
-<!-- 引入 Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
 
+<body>
 <script>
-// ※※※ 填入你自己的 Supabase 信息 ※※※
-const supabaseUrl = "https://sjgmncmlqjpitzboxtboo.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqZ21uY21scWpwdGl6b3h0Ym9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjkwOTksImV4cCI6MjA3ODY0NTA5OX0.vWSV4KLi8e1INuvrcjDFIWrjYpjR5ffx35XQa_Fhmkg"
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  // 初始化 Supabase
+  const supabaseUrl = "https://sjgnmcmlqjpitiz0xtboo.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqZ21uY21scWpwdGl6b3h0Ym9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjkwOTksImV4cCI6MjA3ODY0NTA5OX0.vWSV4KLi8e1INuvrcjDFIWrjYpjR5ffx35XQa_Fhmkg";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// 生成或读取 userId（localStorage）
-let userId = localStorage.getItem("kevin_user_id");
-if (!userId) {
+  // 生成用户 ID
+  let userId = localStorage.getItem("kevin_user_id");
+  if (!userId) {
     userId = crypto.randomUUID();
     localStorage.setItem("kevin_user_id", userId);
-}
+  }
 
-// 更新在线状态
-async function updateOnlineStatus() {
+  // 更新在线状态（每 20 秒）
+  async function updateOnlineStatus() {
     await supabase
-        .from("online_users")
-        .upsert([{ id: userId, last_active: new Date().toISOString() }]);
-}
+      .from("online_users")
+      .upsert({
+        id: userId,
+        last_active: new Date().toISOString()
+      });
+  }
 
-// 查询在线人数（最近2分钟）
-async function getOnlineCount() {
-    const { data, error } = await supabase
-        .from("online_users")
-        .select("*")
-        .gte("last_active", new Date(Date.now() - 2*60*1000).toISOString());
+  // 获取在线人数（最近 2 分钟）
+  async function getOnlineCount() {
+    const { data } = await supabase
+      .from("online_users")
+      .select("*")
+      .gte("last_active", new Date(Date.now() - 2 * 60 * 1000).toISOString());
 
-    // 把在线人数发送给父页面
+    // 发送返回给父页面
     parent.postMessage(
-        { type: "online_count", count: data.length },
-        "*"
+      { type: "online_count", count: data.length },
+      "*"
     );
-}
+  }
 
-// 每20秒更新在线状态
-setInterval(updateOnlineStatus, 20000);
-updateOnlineStatus();
+  // 定时器：更新状态 & 刷新在线人数
+  setInterval(updateOnlineStatus, 20000);
+  setInterval(getOnlineCount, 15000);
 
-// 每15秒发送人数给父页面
-setInterval(getOnlineCount, 15000);
-getOnlineCount();
+  // 页面载入时立即执行一次
+  updateOnlineStatus();
+  getOnlineCount();
 </script>
 
-</head>
-<body>
 </body>
 </html>
