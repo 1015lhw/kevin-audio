@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1000" height="600" viewBox="0 0 1000 600"
+     xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 轻微发光（不夸张，适配你 rgba(60,70,40,0.70) 的森林主题） -->
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 0.55 0" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 路线（虚线） -->
+  <path d="M100 80
+           C 300 40, 700 40, 900 120
+           S 700 260, 500 300
+           S 200 380, 300 460
+           S 700 560, 900 520"
+        fill="none"
+        stroke="rgba(140,255,210,0.55)"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-dasharray="12 10"
+        filter="url(#softGlow)"/>
+</svg>
